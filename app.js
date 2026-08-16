@@ -1,9 +1,190 @@
-const P=[["inicio","⌂","Início"],["plantel","👥","Plantel"],["competicoes","🏆","Competições"],["jogos","⚽","Jogos"],["estatisticas","▥","Estatísticas"],["relatorios","▤","Relatórios"],["presencas","✓","Presenças"],["pse","◉","PSE / Bem-estar"],["avaliacoes","★","Avaliações"],["medidas","⚖","Peso / IMC"],["convocatorias","☑","Convocatórias"],["multas","€","Multas"],["config","⚙","Configurações"]];let sb,DB={players:[],competitions:[],teams:[],games:[]};const $=s=>document.querySelector(s);const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));function buildNav(id){return P.map(x=>`<button class="navItem ${id===x[0]?"active":""}" onclick="show('${x[0]}')"><i class="ico">${x[1]}</i><span>${x[2]}</span></button>`).join("")}function init(){sb=window.supabase?.createClient(AMSAC_CONFIG.supabaseUrl,AMSAC_CONFIG.supabaseKey);show("inicio");load()}async function load(){if(!sb)return;let [p,c,t,g]=await Promise.all([sb.from("players").select("*").order("name"),sb.from("competitions").select("*").order("name"),sb.from("teams").select("*").order("name"),sb.from("games").select("*").order("game_date",{ascending:false})]);DB.players=p.data||[];DB.competitions=c.data||[];DB.teams=t.data||[];DB.games=g.data||[];if(["inicio","plantel","competicoes","jogos"].includes(window.currentPage))show(window.currentPage)}function show(id){window.currentPage=id;$("#nav").innerHTML=buildNav(id);$("#drawerNav").innerHTML=buildNav(id);let f=pages[id]||pages.inicio;f()}function head(t,s){$("#title").textContent=t;$("#subtitle").textContent=s}const pages={inicio:()=>{head("Início","Painel da equipa");$("#content").innerHTML=`<div class="cards"><div class="card accentCard"><div class="muted">Jogadores</div><div class="metric">${DB.players.length}</div></div><div class="card"><div class="muted">Competições</div><div class="metric">${DB.competitions.length}</div></div><div class="card"><div class="muted">Jogos</div><div class="metric">${DB.games.length}</div></div><div class="card"><div class="muted">Golos</div><div class="metric">${DB.games.reduce((n,g)=>n+(g.home_score||0),0)}</div></div></div><div class="card" style="margin-top:15px"><h3>AMSAC Futsal Manager</h3><p class="muted">Gestão moderna da equipa, preparada para o acompanhamento diário e estatística de jogo.</p></div>`},plantel:()=>{head("Plantel","Jogadores");$("#content").innerHTML=`<div class="toolbar"><button class="btn primary" onclick="playerForm()">＋ Adicionar jogador</button></div><div class="list">${DB.players.length?DB.players.map(p=>`<div class="row"><div class="person"><div class="avatar">${p.photo_url?`<img src="${esc(p.photo_url)}">`:esc((p.name||"?")[0])}</div><div><b>${esc(p.name)}</b><div class="muted">#${p.number||"-"} · ${esc(p.position||"")}</div></div></div><button class="btn light" onclick="playerForm('${p.id}')">Editar</button></div>`).join(""):`<div class="card empty">Ainda não tens jogadores.</div>`}</div>`},competicoes:()=>{head("Competições","Competições e equipas");$("#content").innerHTML=`<div class="toolbar"><button class="btn primary" onclick="compForm()">＋ Competição</button><button class="btn dark" onclick="teamForm()">＋ Equipa</button></div><div class="list">${DB.competitions.length?DB.competitions.map(c=>`<div class="row"><div><b>${esc(c.name)}</b><div class="muted">${esc(c.type)}</div></div><span class="tag">${DB.teams.length} equipas</span></div>`).join(""):`<div class="card empty">Ainda não tens competições.</div>`}</div>`},jogos:()=>{head("Jogos","Calendário e jogo ao vivo");$("#content").innerHTML=`<div class="toolbar"><button class="btn primary" onclick="gameForm()">＋ Novo jogo</button></div><div class="list">${DB.games.length?DB.games.map(g=>`<div class="row"><div><b>AMSAC ${g.home_score||0} — ${g.away_score||0}</b><div class="muted">${esc(g.game_date||"")} · ${esc(DB.teams.find(t=>t.id===g.opponent_team_id)?.name||"Adversário")}</div></div><button class="btn dark" onclick="openGame('${g.id}')">Abrir jogo</button></div>`).join(""):`<div class="card empty">Ainda não tens jogos.</div>`}</div>`},estatisticas:()=>{head("Estatísticas","Resumo global");$("#content").innerHTML=`<div class="cards"><div class="card accentCard"><div class="muted">Jogos</div><div class="metric">${DB.games.length}</div></div><div class="card"><div class="muted">Jogadores</div><div class="metric">${DB.players.length}</div></div><div class="card"><div class="muted">Competições</div><div class="metric">${DB.competitions.length}</div></div><div class="card"><div class="muted">Golos</div><div class="metric">${DB.games.reduce((n,g)=>n+(g.home_score||0),0)}</div></div></div>`}};["relatorios","presencas","pse","avaliacoes","medidas","convocatorias","multas","config"].forEach(id=>pages[id]=()=>{let x=P.find(v=>v[0]===id);head(x[2],"Área de gestão");$("#content").innerHTML=`<div class="card empty">Esta área já está integrada no menu moderno. A funcionalidade completa será ligada à base de dados nesta etapa.</div>`});
-function modal(h){$("#modalBody").innerHTML=h;$("#modal").classList.remove("hidden")}function closeModal(){$("#modal").classList.add("hidden")}function closeDrawer(){$("#drawer").classList.add("hidden")}$("#floatingMenu").onclick=()=>$("#drawer").classList.toggle("hidden");$("#mobileMenu").onclick=()=>$("#drawer").classList.toggle("hidden");
-function playerForm(id){let p=DB.players.find(x=>x.id===id)||{};modal(`<h2>${id?"Editar":"Adicionar"} jogador</h2><form class="form" id="pf"><div class="two"><label>Nome<input name="name" required value="${esc(p.name)}"></label><label>Número<input name="number" type="number" value="${p.number||""}"></label></div><label>Posição<select name="position">${["GR","Fixo","Ala","Pivot"].map(x=>`<option ${p.position===x?"selected":""}>${x}</option>`).join("")}</select></label><label>URL da foto<input name="photo_url" value="${esc(p.photo_url)}"></label><button class="btn primary">Guardar jogador</button></form>`);$("#pf").onsubmit=async e=>{e.preventDefault();let f=new FormData(e.target),d={name:f.get("name"),number:f.get("number")?+f.get("number"):null,position:f.get("position"),photo_url:f.get("photo_url")||null};let q=id?await sb.from("players").update(d).eq("id",id):await sb.from("players").insert(d);if(q.error)return alert(q.error.message);closeModal();await load();show("plantel")}}
-function compForm(){modal(`<h2>Nova competição</h2><form class="form" id="cf"><label>Nome<input name="name" required></label><label>Tipo<select name="type"><option value="campeonato">Campeonato</option><option value="taça">Taça</option><option value="torneio">Torneio</option><option value="amigavel">Amigável</option><option value="outros">Outros</option></select></label><button class="btn primary">Guardar</button></form>`);$("#cf").onsubmit=async e=>{e.preventDefault();let f=new FormData(e.target),q=await sb.from("competitions").insert({name:f.get("name"),type:f.get("type")});if(q.error)return alert(q.error.message);closeModal();await load();show("competicoes")}}
-function teamForm(){modal(`<h2>Nova equipa</h2><form class="form" id="tf"><label>Nome<input name="name" required></label><label>URL do símbolo<input name="logo_url"></label><button class="btn primary">Guardar</button></form>`);$("#tf").onsubmit=async e=>{e.preventDefault();let f=new FormData(e.target),q=await sb.from("teams").insert({name:f.get("name"),logo_url:f.get("logo_url")||null});if(q.error)return alert(q.error.message);closeModal();await load();show("competicoes")}}
-function gameForm(){modal(`<h2>Novo jogo</h2><form class="form" id="gf"><label>Data<input name="date" type="date" required></label><label>Competição<select name="comp">${DB.competitions.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("")}</select></label><label>Adversário<select name="opp">${DB.teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join("")}</select></label><div class="two"><label>Minutos por parte<input name="minutes" type="number" min="1" value="20"></label><label>Local<input name="venue"></label></div><button class="btn primary">Criar jogo</button></form>`);$("#gf").onsubmit=async e=>{e.preventDefault();let f=new FormData(e.target),q=await sb.from("games").insert({game_date:f.get("date"),competition_id:f.get("comp")||null,opponent_team_id:f.get("opp")||null,minutes_per_half:+f.get("minutes"),venue:f.get("venue")||null}).select().single();if(q.error)return alert(q.error.message);closeModal();await load();openGame(q.data.id)}}
-function openGame(id){let g=DB.games.find(x=>x.id===id),opp=DB.teams.find(t=>t.id===g.opponent_team_id);head("Jogo ao vivo","AMSAC · "+(opp?.name||"Adversário"));$("#content").innerHTML=`<div class="gameHero"><div class="team"><div class="teamName">AMSAC</div></div><div class="team"><div class="clock">${String(g.minutes_per_half||20).padStart(2,"0")}:00</div><div class="score">${g.home_score||0} — ${g.away_score||0}</div></div><div class="team"><div class="teamName">${esc(opp?.name||"Adversário")}</div></div></div><div class="sectionTitle"><h3>Jogo</h3><span class="tag">${g.minutes_per_half||20}' / parte</span></div><div class="gameBtns"><button class="gameBtn" onclick="goalLive('${id}')">＋1 GOLO<small>marcador · assistência · zona</small></button><button class="gameBtn">🔄 SUBSTITUIÇÃO<small>entra / sai</small></button><button class="gameBtn">▶ INICIAR RELÓGIO<small>tempo decrescente</small></button><button class="gameBtn">⏸ PAUSAR<small>parar relógio</small></button></div><div class="sectionTitle"><h3>5 em campo</h3></div><div class="card"><div class="playerBtns">${DB.players.map(p=>`<button class="playerBtn">${esc(p.name)}</button>`).join("")||"Sem jogadores"}</div></div><div class="sectionTitle"><h3>Estatística rápida</h3></div><div class="actions">${["REMATE 🥅","FORA","PERDA","RECUPERAÇÃO","FC","FS","CA 🟨","CV 🟥"].map(a=>`<button>${a}</button>`).join("")}</div>`}
-function goalLive(id){modal(`<h2>＋1 GOLO</h2><div class="form"><label>Marcador<select>${DB.players.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select></label><label>Assistência<select><option>Sem assistência</option>${DB.players.map(p=>`<option>${esc(p.name)}</option>`).join("")}</select></label><label>Motivo<select>${["Organização ofensiva","Transição","5x4","Canto","Livre","Penálti","Outro"].map(x=>`<option>${x}</option>`).join("")}</select></label><b>Zona da baliza</b><div class="pitch">${["Sup. esq.","Sup. centro","Sup. dir.","Centro esq.","Centro","Centro dir.","Inf. esq.","Inf. centro","Inf. dir."].map(x=>`<button type="button" onclick="this.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));this.classList.add('selected')">${x}</button>`).join("")}</div><button class="btn primary">Confirmar golo</button></div>`)}
+const MENU=[
+ ["inicio","⌂","Início"],["plantel","👥","Plantel"],["competicoes","🏆","Competições"],
+ ["jogos","⚽","Jogos"],["estatisticas","▥","Estatísticas"],["presencas","✓","Presenças"],
+ ["pse","◉","PSE / Bem-estar"],["avaliacoes","★","Avaliações"],["medidas","⚖","Peso / IMC"],
+ ["convocatorias","☑","Convocatórias"],["multas","€","Multas"],["relatorios","▤","Relatórios"],["config","⚙","Configurações"]
+];
+
+const state={players:[],competitions:[],teams:[],games:[]};
+let supabaseClient=null;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+
+function makeNav(active){
+ return MENU.map(x=>`<button class="navBtn ${active===x[0]?"active":""}" onclick="showPage('${x[0]}')"><span class="navIcon">${x[1]}</span>${x[2]}</button>`).join("");
+}
+function setNav(id){
+ $("#desktopNav").innerHTML=makeNav(id);
+ $("#mobilePanel").innerHTML=makeNav(id);
+}
+function toggleMobileMenu(){
+ $("#mobilePanel").classList.toggle("show");
+ if($("#mobilePanel").classList.contains("show")) $("#mobilePanel").innerHTML=makeNav(window.currentPage||"inicio");
+}
+function closeModal(){ $("#modal").classList.add("hidden"); }
+function openModal(html){ $("#modalBody").innerHTML=html; $("#modal").classList.remove("hidden"); }
+
+function pageHeader(title,sub){
+ $("#pageTitle").textContent=title;
+ $("#pageSub").textContent=sub;
+}
+
+async function loadData(){
+ if(!supabaseClient)return;
+ const [p,c,t,g]=await Promise.all([
+  supabaseClient.from("players").select("*").order("name"),
+  supabaseClient.from("competitions").select("*").order("name"),
+  supabaseClient.from("teams").select("*").order("name"),
+  supabaseClient.from("games").select("*").order("game_date",{ascending:false})
+ ]);
+ state.players=p.data||[]; state.competitions=c.data||[]; state.teams=t.data||[]; state.games=g.data||[];
+}
+
+const pages={
+ inicio(){
+  pageHeader("Início","Painel da equipa");
+  $("#content").innerHTML=`
+   <div class="cards">
+    <div class="card yellowTop"><div class="label">Jogadores</div><div class="metric">${state.players.length}</div></div>
+    <div class="card"><div class="label">Competições</div><div class="metric">${state.competitions.length}</div></div>
+    <div class="card"><div class="label">Jogos</div><div class="metric">${state.games.length}</div></div>
+    <div class="card"><div class="label">Golos</div><div class="metric">${state.games.reduce((n,g)=>n+(g.home_score||0),0)}</div></div>
+   </div>
+   <div class="section card"><h3>AMSAC Futsal Manager</h3><p class="muted">O centro de gestão da equipa. Usa o menu para aceder ao plantel, jogos, presenças e análise.</p></div>`;
+ },
+ plantel(){
+  pageHeader("Plantel","Jogadores");
+  $("#content").innerHTML=`
+   <div class="sectionHeader"><h3>Plantel</h3><button class="btn primary" onclick="playerForm()">＋ Adicionar jogador</button></div>
+   <div class="list">${state.players.length?state.players.map(p=>`
+    <div class="row"><div class="person"><div class="avatar">${p.photo_url?`<img src="${esc(p.photo_url)}">`:esc((p.name||"?")[0])}</div>
+    <div><b>${esc(p.name)}</b><div class="muted">#${p.number||"-"} · ${esc(p.position||"")}</div></div></div>
+    <button class="btn light" onclick="playerForm('${p.id}')">Editar</button></div>`).join(""):`<div class="card empty">Ainda não tens jogadores.</div>`}</div>`;
+ },
+ competicoes(){
+  pageHeader("Competições","Competições e equipas");
+  $("#content").innerHTML=`
+   <div class="toolbar"><button class="btn primary" onclick="competitionForm()">＋ Competição</button><button class="btn dark" onclick="teamForm()">＋ Equipa</button></div>
+   <div class="list">${state.competitions.length?state.competitions.map(c=>`
+    <div class="row"><div><b>${esc(c.name)}</b><div class="muted">${esc(c.type||"")}</div></div><span class="tag">Competição</span></div>`).join(""):`<div class="card empty">Ainda não tens competições.</div>`}</div>`;
+ },
+ jogos(){
+  pageHeader("Jogos","Calendário e jogo");
+  $("#content").innerHTML=`
+   <div class="sectionHeader"><h3>Jogos</h3><button class="btn primary" onclick="gameForm()">＋ Novo jogo</button></div>
+   ${state.games.length?state.games.map(g=>{const t=state.teams.find(x=>x.id===g.opponent_team_id);return`
+    <div class="row"><div><b>AMSAC ${g.home_score||0} — ${g.away_score||0} ${esc(t?.name||"")}</b><div class="muted">${esc(g.game_date||"")}</div></div>
+    <button class="btn dark" onclick="openGame('${g.id}')">Abrir</button></div>`}).join(""):`<div class="card empty">Ainda não tens jogos.</div>`}`;
+ },
+ estatisticas(){
+  pageHeader("Estatísticas","Resumo da equipa");
+  $("#content").innerHTML=`<div class="cards">
+   <div class="card yellowTop"><div class="label">Jogos</div><div class="metric">${state.games.length}</div></div>
+   <div class="card"><div class="label">Jogadores</div><div class="metric">${state.players.length}</div></div>
+   <div class="card"><div class="label">Competições</div><div class="metric">${state.competitions.length}</div></div>
+   <div class="card"><div class="label">Golos</div><div class="metric">${state.games.reduce((n,g)=>n+(g.home_score||0),0)}</div></div>
+  </div>`;
+ }
+};
+
+const placeholder=["presencas","pse","avaliacoes","medidas","convocatorias","multas","relatorios","config"];
+placeholder.forEach(id=>pages[id]=()=>{
+ const item=MENU.find(x=>x[0]===id);
+ pageHeader(item[2],"Gestão da equipa");
+ $("#content").innerHTML=`<div class="card empty"><h3>${item[2]}</h3><p>Área preparada na estrutura Stats5. A funcionalidade será acrescentada mantendo este mesmo layout.</p></div>`;
+});
+
+function showPage(id){
+ window.currentPage=id;
+ setNav(id);
+ pages[id]?pages[id]():pages.inicio();
+ $("#mobilePanel").classList.remove("show");
+}
+
+function playerForm(id){
+ const p=state.players.find(x=>x.id===id)||{};
+ openModal(`<h2>${id?"Editar":"Adicionar"} jogador</h2>
+ <form class="form" id="playerForm">
+  <div class="two"><label>Nome<input name="name" required value="${esc(p.name)}"></label><label>Número<input name="number" type="number" value="${p.number||""}"></label></div>
+  <label>Posição<select name="position">${["GR","Fixo","Ala","Pivot"].map(x=>`<option ${p.position===x?"selected":""}>${x}</option>`).join("")}</select></label>
+  <label>Foto (URL)<input name="photo_url" value="${esc(p.photo_url)}" placeholder="Podes alterar mais tarde"></label>
+  <button class="btn primary">Guardar jogador</button>
+ </form>`);
+ $("#playerForm").onsubmit=async e=>{
+  e.preventDefault(); const f=new FormData(e.target);
+  const d={name:f.get("name"),number:f.get("number")?Number(f.get("number")):null,position:f.get("position"),photo_url:f.get("photo_url")||null};
+  const q=id?await supabaseClient.from("players").update(d).eq("id",id):await supabaseClient.from("players").insert(d);
+  if(q.error){alert(q.error.message);return;} closeModal();await loadData();showPage("plantel");
+ };
+}
+
+function competitionForm(){
+ openModal(`<h2>Nova competição</h2><form class="form" id="competitionForm">
+ <label>Nome<input name="name" required></label>
+ <label>Tipo<select name="type"><option>Campeonato</option><option>Taça</option><option>Torneio</option><option>Amigável</option><option>Outros</option></select></label>
+ <button class="btn primary">Guardar competição</button></form>`);
+ $("#competitionForm").onsubmit=async e=>{
+  e.preventDefault();const f=new FormData(e.target);
+  const q=await supabaseClient.from("competitions").insert({name:f.get("name"),type:f.get("type")});
+  if(q.error){alert(q.error.message);return;}closeModal();await loadData();showPage("competicoes");
+ };
+}
+
+function teamForm(){
+ openModal(`<h2>Nova equipa</h2><form class="form" id="teamForm">
+ <label>Nome<input name="name" required></label><label>URL do símbolo<input name="logo_url"></label>
+ <button class="btn primary">Guardar equipa</button></form>`);
+ $("#teamForm").onsubmit=async e=>{
+  e.preventDefault();const f=new FormData(e.target);
+  const q=await supabaseClient.from("teams").insert({name:f.get("name"),logo_url:f.get("logo_url")||null});
+  if(q.error){alert(q.error.message);return;}closeModal();await loadData();showPage("competicoes");
+ };
+}
+
+function gameForm(){
+ openModal(`<h2>Novo jogo</h2><form class="form" id="gameForm">
+ <label>Data<input name="date" type="date" required></label>
+ <label>Competição<select name="competition">${state.competitions.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("")}</select></label>
+ <label>Adversário<select name="opponent">${state.teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join("")}</select></label>
+ <div class="two"><label>Minutos por parte<input name="minutes" type="number" value="20" min="1"></label><label>Partes<input name="halves" type="number" value="2" min="1"></label></div>
+ <button class="btn primary">Criar jogo</button></form>`);
+ $("#gameForm").onsubmit=async e=>{
+  e.preventDefault();const f=new FormData(e.target);
+  const q=await supabaseClient.from("games").insert({game_date:f.get("date"),competition_id:f.get("competition")||null,opponent_team_id:f.get("opponent")||null,minutes_per_half:Number(f.get("minutes")),halves:Number(f.get("halves")),home_score:0,away_score:0}).select().single();
+  if(q.error){alert(q.error.message);return;}closeModal();await loadData();openGame(q.data.id);
+ };
+}
+
+function openGame(id){
+ const g=state.games.find(x=>x.id===id); const t=state.teams.find(x=>x.id===g?.opponent_team_id);
+ pageHeader("Jogo ao vivo","AMSAC · "+(t?.name||"Adversário"));
+ $("#content").innerHTML=`
+ <div class="gameHero"><div class="team">AMSAC</div><div><div class="clock">${String(g?.minutes_per_half||20).padStart(2,"0")}:00</div><div class="score">${g?.home_score||0} — ${g?.away_score||0}</div></div><div class="team">${esc(t?.name||"Adversário")}</div></div>
+ <div class="section"><div class="quickGrid">
+  <button class="quickBtn">▶<br>Iniciar</button><button class="quickBtn">⏸<br>Pausar</button>
+  <button class="quickBtn" onclick="goalForm('${id}')">＋1 GOLO<br><small>marcador · assistência · zona</small></button>
+  <button class="quickBtn">↔<br>Substituição</button>
+ </div></div>
+ <div class="section card"><div class="sectionHeader"><h3>5 em campo</h3><span class="tag">0 / 5</span></div>
+ <div class="quickGrid">${state.players.map(p=>`<button class="quickBtn">${esc(p.name)}</button>`).join("")||`<span class="muted">Adiciona primeiro os jogadores ao plantel.</span>`}</div></div>
+ <div class="section"><div class="sectionHeader"><h3>Estatística rápida</h3></div>
+ <div class="quickGrid">${["REMATE 🥅","FORA","PERDA","RECUPERAÇÃO","FC","FS","CA 🟨","CV 🟥"].map(x=>`<button class="quickBtn">${x}</button>`).join("")}</div></div>`;
+}
+
+function goalForm(id){
+ openModal(`<h2>＋1 GOLO</h2><form class="form">
+ <label>Marcador<select>${state.players.map(p=>`<option>${esc(p.name)}</option>`).join("")}</select></label>
+ <label>Assistência<select><option>Sem assistência</option>${state.players.map(p=>`<option>${esc(p.name)}</option>`).join("")}</select></label>
+ <label>Motivo<select>${["Organização ofensiva","Transição","5x4","Canto","Livre","Penálti","Outro"].map(x=>`<option>${x}</option>`).join("")}</select></label>
+ <b>Zona da baliza</b><div class="quickGrid">${["Sup. esq.","Sup. centro","Sup. dir.","Centro esq.","Centro","Centro dir.","Inf. esq.","Inf. centro","Inf. dir."].map(x=>`<button type="button" class="quickBtn">${x}</button>`).join("")}</div>
+ <button type="button" class="btn primary" onclick="closeModal()">Confirmar golo</button></form>`);
+}
+
+async function init(){
+ if(window.supabase&&window.AMSAC_CONFIG){
+  supabaseClient=window.supabase.createClient(AMSAC_CONFIG.supabaseUrl,AMSAC_CONFIG.supabaseKey);
+  await loadData();
+ }
+ showPage("inicio");
+}
 init();

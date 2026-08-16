@@ -1,34 +1,46 @@
 <!doctype html>
 <html lang="pt-PT">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#111111">
 <title>AMSAC Futsal Manager</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div id="appShell">
-  <aside id="sidebar">
+<div class="shell">
+  <aside class="sidebar">
     <div class="brand">
-      <div class="logo"><span>AMSAC</span><small>FUTSAL</small></div>
-      <div><strong>AMSAC</strong><small>FUTSAL MANAGER</small></div>
+      <div class="crest">AMSAC<small>FUTSAL</small></div>
+      <div><strong>AMSAC</strong><span>FUTSAL MANAGER</span></div>
     </div>
-    <nav id="nav"></nav>
+    <nav id="desktopNav"></nav>
   </aside>
+
   <main>
     <header class="topbar">
       <div>
-        <div class="eyebrow">AMSAC FUTSAL MANAGER</div>
-        <h1 id="title">Início</h1><p id="subtitle">Painel da equipa</p>
+        <div class="overline">AMSAC FUTSAL MANAGER</div>
+        <h1 id="pageTitle">Início</h1>
+        <p id="pageSub">Painel da equipa</p>
       </div>
-      <div class="topActions"><button class="iconBtn" id="mobileMenu">☰</button></div>
+      <button class="desktopMenu" onclick="toggleMobileMenu()">☰</button>
     </header>
     <section id="content"></section>
   </main>
 </div>
-<button id="floatingMenu" aria-label="Menu">☰</button>
-<div id="drawer" class="drawer hidden"><div class="drawerHead"><b>AMSAC</b><button class="iconBtn" onclick="closeDrawer()">×</button></div><div id="drawerNav"></div></div>
-<div id="modal" class="modal hidden"><div class="modalCard"><button class="close" onclick="closeModal()">×</button><div id="modalBody"></div></div></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script><script src="app.js"></script>
-</body></html>
+
+<button class="floatingMenu" onclick="toggleMobileMenu()">☰</button>
+<div id="mobilePanel" class="mobilePanel"></div>
+
+<div id="modal" class="modal hidden">
+  <div class="modalCard">
+    <button class="modalClose" onclick="closeModal()">×</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
