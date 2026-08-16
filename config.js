@@ -1,8 +1,2 @@
-// Preenche estes dois campos com as credenciais PUBLIC/anon do teu projeto Supabase.
-// Nunca uses aqui a service_role key.
-window.AMSAC_CONFIG = {
-  SUPABASE_URL: "",
-  SUPABASE_ANON_KEY: "",
-  TEAM_NAME: "AMSAC",
-  TEAM_LOGO: ""
-};
+const SUPABASE_URL = "https://tgbigwnzdnhhdlgflkyw.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_KV3oiEf7-2klFMgSeFHFZw_IEV2vwHF";
