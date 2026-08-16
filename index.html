@@ -1,1 +1,34 @@
-<!doctype html><html lang="pt-PT"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AMSAC Futsal Manager</title><link rel="stylesheet" href="styles.css"></head><body><div class="app"><aside id="side"><div class="brand"><div class="crest">A</div><div><b>AMSAC</b><small>FUTSAL MANAGER</small></div></div><nav id="nav"></nav></aside><main><header><button id="menu">☰</button><div><h1 id="pageTitle">Início</h1><p id="pageSub">Gestão da equipa</p></div></header><section id="app"></section></main></div><div id="modal" class="modal hidden"><div class="modalCard"><button class="close" onclick="closeModal()">×</button><div id="modalContent"></div></div></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script src="app.js"></script></body></html>
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111111">
+<title>AMSAC Futsal Manager</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="appShell">
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="logo"><span>AMSAC</span><small>FUTSAL</small></div>
+      <div><strong>AMSAC</strong><small>FUTSAL MANAGER</small></div>
+    </div>
+    <nav id="nav"></nav>
+  </aside>
+  <main>
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">AMSAC FUTSAL MANAGER</div>
+        <h1 id="title">Início</h1><p id="subtitle">Painel da equipa</p>
+      </div>
+      <div class="topActions"><button class="iconBtn" id="mobileMenu">☰</button></div>
+    </header>
+    <section id="content"></section>
+  </main>
+</div>
+<button id="floatingMenu" aria-label="Menu">☰</button>
+<div id="drawer" class="drawer hidden"><div class="drawerHead"><b>AMSAC</b><button class="iconBtn" onclick="closeDrawer()">×</button></div><div id="drawerNav"></div></div>
+<div id="modal" class="modal hidden"><div class="modalCard"><button class="close" onclick="closeModal()">×</button><div id="modalBody"></div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script><script src="app.js"></script>
+</body></html>
