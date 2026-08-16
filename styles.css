@@ -86,3 +86,8 @@ h1{margin:4px 0 0;font-size:30px}
   .quickGrid{grid-template-columns:repeat(2,1fr)}
   .two{grid-template-columns:1fr}
 }
+.uploadPreview{margin:10px 0;min-height:60px;display:flex;align-items:center}
+.uploadPreview img{width:78px;height:78px;border-radius:12px;object-fit:cover;border:1px solid rgba(255,255,255,.12)}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:9999;background:#111;color:#fff;border:1px solid #f5c400;border-radius:10px;padding:12px 18px;box-shadow:0 8px 30px rgba(0,0,0,.35);font-size:14px}
+.quickBtn{min-height:54px}
+@media(max-width:700px){.modalCard{width:calc(100vw - 24px);max-height:90vh;overflow:auto}.quickGrid{grid-template-columns:repeat(2,1fr)!important}.two{grid-template-columns:1fr!important}}
