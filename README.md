@@ -1,1 +1,0 @@
-# AMSAC Futsal Manager — novo projeto\n\nProjeto novo, sem ficheiros V7/V8.\n
